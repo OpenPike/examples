@@ -1,6 +1,6 @@
 # Stop a runaway agent
 
-`loop.py` is a deliberate loop: it sends the same request again and again with the tag `agent=runaway-demo` and a run ID, so loop detection or a run budget stops it. It stops itself on the first `429` (and sets `max_retries=0`, because retrying does not help).
+`loop.py` is a deliberate loop: it sends the same request again and again with the tag `agent=runaway-demo` and a run ID, so loop detection or a run budget stops it. It keeps the SDK's default retries: OpenPike refuses a blocked request before any provider call, so they cost nothing. It stops itself when a `429` is not cleared by those retries, and on a block the agent stops rather than looping.
 
 Set up first (Budgets page, plan Team or Business for loop limits):
 
