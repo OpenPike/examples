@@ -37,8 +37,9 @@ jobs:
 
   live:
     name: live
-    # Runs the SDK examples against the real gateway. Skipped on pull requests from forks and when no key is set.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Runs the SDK examples against the real gateway. Only on push to main and manual runs, never on pull requests
+    # or the schedule, and skipped when no key is set. The stop-a-runaway-agent recipe is never run here: it loops on purpose.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       OPENPIKE_API_KEY: ${{ secrets.OPENPIKE_API_KEY }}
@@ -61,5 +62,8 @@ jobs:
           npm install
           pip install -r requirements.txt
           set -e
-          for f in sdks/*/*.py; do echo "== $f"; python "$f"; done
-          for f in sdks/*/*.ts; do echo "== $f"; npx tsx "$f"; done
+          for f in sdks/*/*.py sdks/*/*.ts; do
+            case "$f" in *runaway*) echo "== skip $f"; continue;; esac
+            echo "== $f"
+            case "$f" in *.py) python "$f";; *.ts) npx tsx "$f";; esac
+          done
