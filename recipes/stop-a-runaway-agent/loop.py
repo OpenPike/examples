@@ -11,7 +11,6 @@ client = OpenAI(
         "x-openpike-run": f"runaway-demo-{int(time.time())}",
         "x-openpike-run-label": "Deliberate loop",
     },
-    max_retries=0,  # a stopped agent answers 429; retrying does not help
 )
 
 for attempt in range(1, 201):
