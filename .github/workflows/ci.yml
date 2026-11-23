@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  typescript:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run typecheck
+
+  python:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: ruff check .
+      - run: python -m compileall -q sdks recipes
+
+  live:
+    name: live
+    # Runs the SDK examples against the real gateway. Skipped on pull requests from forks and when no key is set.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      OPENPIKE_API_KEY: ${{ secrets.OPENPIKE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip when no key is set
+        id: key
+        run: |
+          if [ -z "$OPENPIKE_API_KEY" ]; then echo "set=false" >> "$GITHUB_OUTPUT"; echo "No OPENPIKE_API_KEY secret; skipping."; else echo "set=true" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.key.outputs.set == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - if: steps.key.outputs.set == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - if: steps.key.outputs.set == 'true'
+        run: |
+          npm install
+          pip install -r requirements.txt
+          set -e
+          for f in sdks/*/*.py; do echo "== $f"; python "$f"; done
+          for f in sdks/*/*.ts; do echo "== $f"; npx tsx "$f"; done

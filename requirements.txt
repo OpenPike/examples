@@ -1,0 +1,7 @@
+openai
+anthropic
+httpx
+langchain-openai
+llama-index-core
+llama-index-llms-openai-like
+ruff

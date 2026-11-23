@@ -1,0 +1,10 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.openpike.dev",
+    "ANTHROPIC_AUTH_TOKEN": "opk_live_...",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "anthropic/claude-opus-5-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "anthropic/claude-sonnet-5-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "anthropic/claude-haiku-5-5",
+    "ANTHROPIC_CUSTOM_HEADERS": "x-openpike-tags: agent=claude-code"
+  }
+}
